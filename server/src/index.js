@@ -18,12 +18,25 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://northline-roofing-psi.vercel.app'
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1 || (process.env.CLIENT_URL && origin === process.env.CLIENT_URL)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   }),
 );
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -41,7 +54,6 @@ app.get('/api/auth/session', getSession);
 app.put('/api/admin/config', requireOwnerAuth, updateConfig);
 app.get('/api/admin/leads', requireOwnerAuth, getLeads);
 
-// Naye routes jo 404 error ko fix karenge
 app.patch('/api/admin/leads/:id', requireOwnerAuth, updateLeadStatus);
 app.delete('/api/admin/leads/:id', requireOwnerAuth, deleteLead);
 
