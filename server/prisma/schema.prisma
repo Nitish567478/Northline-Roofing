@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Config {
+  id             Int      @id @default(autoincrement())
+  configVersion  Int      @default(3) @map("config_version")
+  businessName   String   @default("Northline Roofing & Exteriors") @map("business_name")
+  businessRegion String   @default("Pacific Northwest") @map("business_region")
+  currency       String   @default("USD")
+  wasteFactor    Float    @default(0.10) @map("waste_factor")
+  permitFlatFee  Float    @default(350) @map("permit_flat_fee")
+  rangeSpreadPct Float    @default(12) @map("range_spread_pct")
+  isActive       Boolean  @default(true) @map("is_active")
+  questions      String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  leads          Lead[]
+
+  @@map("configs")
+}
+
+model Lead {
+  id            Int      @id @default(autoincrement())
+  name          String
+  phone         String
+  email         String
+  answers       String
+  estimateLow   Int      @map("estimate_low")
+  estimateHigh  Int      @map("estimate_high")
+  configVersion Int      @map("config_version")
+  configId      Int      @map("config_id")
+  status        String   @default("pending") // 🟢 Yeh field missing thi, ab add ho gayi hai!
+  config        Config   @relation(fields: [configId], references: [id])
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("leads")
+}
